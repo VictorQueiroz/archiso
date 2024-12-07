@@ -1,0 +1,10 @@
+root = true
+
+[*]
+charset = utf-8
+insert_space_after_comma_delimiter = true
+insert_newline_at_eof = true
+indent_size = 2
+indent_style = space
+trim_trailing_whitespace = true
+

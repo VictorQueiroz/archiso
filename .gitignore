@@ -1,0 +1,18 @@
+/aur
+/.history
+/node_modules
+*.tsbuildinfo
+*.js
+*.d.ts
+*.map
+
+# Ignore `archiso` stuff
+/archiso/airootfs/var/lib/pacman/
+/archiso/airootfs/var/cache
+/archiso/airootfs/etc/pacman.d
+/archiso/airootfs/etc/systemd
+/archiso/airootfs/etc/pacman.conf
+/archiso/airootfs/usr/share/pacman/keyrings
+# Ignore default home directory
+/archiso/airootfs/etc/skel
+/archiso/packages.x86_64

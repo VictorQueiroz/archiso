@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "exclude": ["./aur", "./node_modules", "./preset/nvidia-optimus", "./archiso"],
+  "compilerOptions": {
+    "types": ["node"],
+    "module": "CommonJS",
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  }
+}
