@@ -1,15 +1,6 @@
 import assert from 'assert';
-
-export enum ParsedPackageFlag {
-  /**
-   * Download this package from AUR
-   */
-  ArchLinuxUserRepository = 'aur',
-  /**
-   * Clean the repository before building
-   */
-  CleanBuild = 'cleanbuild',
-}
+import { ParsedPackageFlag } from './ParsedPackageFlag';
+import parsedPackageFlagFromString from './parsedPackageFlagFromString';
 
 export interface IParsedPackageName {
   packageName: string;
@@ -24,25 +15,26 @@ export default class PackageNameParser {
     this.#contents = contents;
   }
 
-  public read() {
+  public read(): IParsedPackageName {
     // Read the package name
     const identifier = this.#readIdentifier();
 
     const flags = new Array<string>();
 
-    while(!this.#eof() && this.#consume(';')) {
+    while (!this.#eof() && this.#consume(';')) {
       flags.push(this.#readIdentifier());
     }
 
-    console.log(this.#contents, flags, identifier);
-
-    return { packageName: identifier, flags };
+    return {
+      packageName: identifier,
+      flags: flags.map((flag) => parsedPackageFlagFromString(flag))
+    };
   }
 
   #consume(ch: string) {
     // Make sure `ch` has length 1
     assert.strictEqual(ch.length, 1, `Expected a single character, got: ${ch}`);
-    if(this.#peek() !== ch) {
+    if (this.#peek() !== ch) {
       return false;
     }
     this.#advance();
@@ -51,14 +43,14 @@ export default class PackageNameParser {
 
   #readIdentifier() {
     const start = this.#offset;
-    while (!this.#eof() && (this.#peek(/^[a-z-]$/))) {
+    while (!this.#eof() && this.#peek(/^[a-z0-9-_]$/)) {
       this.#advance();
     }
     return this.#contents.substring(start, this.#offset);
   }
 
   #peek(match: RegExp | null = null): string | null {
-    if(this.#eof()) {
+    if (this.#eof()) {
       return null;
     }
 
@@ -66,7 +58,7 @@ export default class PackageNameParser {
 
     assert.strict.ok(ch !== null, 'Unexpected end of file');
 
-    if(match !== null && !match.test(ch)) {
+    if (match !== null && !match.test(ch)) {
       return null;
     }
 
@@ -81,4 +73,3 @@ export default class PackageNameParser {
     return this.#offset >= this.#contents.length;
   }
 }
-

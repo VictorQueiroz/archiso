@@ -6,11 +6,15 @@
 *.d.ts
 *.map
 
+# Ignore the build directory where we put AUR modules, and more
+/build
+
 # Ignore `archiso` stuff
 /archiso/airootfs/var/lib/pacman/
 /archiso/airootfs/var/cache
 /archiso/airootfs/etc/pacman.d
 /archiso/airootfs/etc/systemd
+/archiso/airootfs/opt/repositories
 /archiso/airootfs/etc/pacman.conf
 /archiso/airootfs/usr/share/pacman/keyrings
 # Ignore default home directory

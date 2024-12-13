@@ -5,6 +5,7 @@ import installFiles from './installFiles';
 import { spawn } from 'child-process-utilities';
 import workPreset from '../preset/work';
 import { getArgument } from 'cli-argument-helper';
+import PackageNameParser from '../preset/core/package/PackageNameParser';
 
 async function setMirrors() {
   // Fetch this in real-time from Arch Linux mirror list
@@ -37,7 +38,12 @@ async function setMirrors() {
     await spawn('docker', [
       'buildx',
       'build',
+      // Enable verbose mode
+      '--progress=plain',
       '--rm',
+      // Define USER environment variable
+      '--build-arg',
+      `USER=${configuration.docker.image.user}`,
       '-t',
       'archlinux-iso-agent:latest',
       path.resolve(__dirname, '../docker/image')
@@ -47,14 +53,6 @@ async function setMirrors() {
   const preset = workPreset;
   const cs = new TextStreamWritableStream(
     path.resolve(configuration.isoFolder, 'profiledef.sh')
-  );
-
-  await spawn.wait(
-    'find',
-    [configuration.paths.aurPackages, '-maxdepth', '1'],
-    {
-      log: true
-    }
   );
 
   await cs.prepare();
@@ -82,15 +80,7 @@ async function setMirrors() {
 
   cs.write('\n');
 
-  setMirrors();
-
-  const packages = new TextStreamWritableStream(
-    path.resolve(configuration.isoFolder, 'packages.x86_64')
-  );
-
-  packages.write(preset.architecture['x86_64'].packages.join('\n'));
-
-  await packages.wait();
+  await setMirrors();
 
   await installFiles('airootfs', [
     {
@@ -110,13 +100,44 @@ async function setMirrors() {
 //     }
   ]);
 
+  const airootfsDir = configuration.paths.aiRootFs;
+
   for (const plugin of preset.plugins) {
     await plugin.run({
       preset,
       rootDir: configuration.isoFolder,
-      airootfsDir: configuration.paths.aiRootFs
+      airootfsDir
     });
   }
+
+  const packages = new TextStreamWritableStream(
+    path.resolve(configuration.isoFolder, 'packages.x86_64')
+  );
+
+  for(const pkgName of preset.architecture.x86_64.packages) {
+    let pkgNames: string[]
+    if(typeof pkgName === 'string') {
+      pkgNames = [pkgName];
+    } else {
+      pkgNames = pkgName.packages.map(pkg => typeof pkg === 'string' ? pkg : pkg.name);
+    }
+
+    for(const pkgName of pkgNames) {
+      const pkg = new PackageNameParser(pkgName).read();
+      packages.write(`${pkg.packageName}\n`);
+    }
+  }
+
+  await packages.wait();
+  console.log('Calling mkarchiso...');
+
+  // Produce the ISO
+  await spawn('mkarchiso',[
+    //'-w',
+    '-o',
+    path.resolve(configuration.paths.buildDirectory),
+    configuration.isoFolder,
+  ],{log: true}).wait();
 
   await cs.wait();
 })().catch((reason) => {

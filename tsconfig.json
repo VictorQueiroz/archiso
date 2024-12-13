@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
-  "exclude": ["./aur", "./node_modules", "./preset/nvidia-optimus", "./archiso"],
+  "include": ["src/**/*.ts","preset/**/*.ts","plugin/**/*.ts","docker/**/*.ts"],
+  "exclude": ["preset/nvidia-optimus"],
   "compilerOptions": {
     "types": ["node"],
     "module": "CommonJS",

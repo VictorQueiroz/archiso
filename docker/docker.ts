@@ -2,6 +2,25 @@ import {spawn} from "child-process-utilities";
 import {IOptions} from "child-process-utilities/createSpawnWithDefaultOptions";
 
 /**
+ * @deprecated Renamed to `dockerRunDefaultArguments`
+ */
+export const dockerDefaultArguments = [
+  '--name', 'tmp-container',
+  '-t',
+  'archlinux-iso-agent:latest',
+];
+
+export const dockerExecDefaultArguments = [
+  '-t',
+  'archlinux-iso-agent:latest',
+]
+
+export const dockerRunDefaultArguments = [
+  '--rm',
+  '--privileged',
+]
+
+/**
  * Run the command into a docker container running
  * a clean Arch Linux machine.
  * @param command the command to be executed within the Docker container
@@ -12,13 +31,9 @@ export default function docker(command: string, args: string[], dockerArgs: stri
   return spawn('docker', [
     'run',
     ...dockerArgs,
-    '--rm',
-    '--name', 'tmp-container',
-    '--privileged',
-    '-t',
-    'archlinux-iso-agent:latest',
+    ...dockerDefaultArguments,
     command,
     ...args
-  ], {log: true, ...options}).wait();
+  ], {log: true, ...options});
 }
 
